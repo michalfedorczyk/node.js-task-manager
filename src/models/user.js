@@ -75,7 +75,7 @@ userSchema.methods.toJSON = function () {
 // generatre Auth token and save to the User model, method on the instance
 userSchema.methods.generateAuthToken = async function () {
     const user = this
-    const token = jwt.sign({ _id: user._id.toString() }, 'pieskotdziwkisos')
+    const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET)
 
     user.tokens = user.tokens.concat({ token })
     await user.save()

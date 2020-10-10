@@ -4,6 +4,7 @@ const sharp = require('sharp')
 const { update } = require('../models/user')
 const auth = require('../middleware/auth')
 const router = new express.Router()
+const { sendWelcomeMessage, userLeaveMessage } = require('../emails/account')
 
 const User = require('../models/user')
 
@@ -12,6 +13,7 @@ router.post('/users', async (req, res) => {
 
     try {
         await user.save()
+        sendWelcomeMessage(user.email, user.name)
         const token = await user.generateAuthToken()
         res.status(201).send({ user, token })
     } catch (error) {
@@ -78,8 +80,10 @@ router.patch('/users/me', auth, async (req, res) => {
 })
 
 router.delete('/users/me', auth, async (req, res) => {
+
     try {
         await req.user.delete()
+        userLeaveMessage(req.user.email, req.user.name)
         res.send(req.user)
     } catch (error) {
         res.status(500).send(error)
@@ -100,10 +104,8 @@ const upload = multer({
 })
 
 router.post('/users/me/avatar', auth, upload.single('avatar'), async (req, res) => {
-    // req.user.avatar = req.file.buffer
-    const buffer= await sharp(req.file.buffer).png().toBuffer()
-
-
+    const buffer = await sharp(req.file.buffer).resize({ width: 250, height: 250 }).png().toBuffer()
+    req.user.avatar = buffer
     await req.user.save()
     res.send()
 }, (error, req, res, next) => {
@@ -134,7 +136,7 @@ router.get('/users/:id/avatar', async (req, res) => {
             throw new Error()
         }
 
-        res.set('Content-Type', 'image/jpg')
+        res.set('Content-Type', 'image/png')
         res.send(user.avatar)
 
     } catch (error) {
