@@ -8,8 +8,8 @@
     "dev": "env-cmd -f ./config/dev.env nodemon src/index.js -e js,css,hbs,html",
     "test": "env-cmd -f ./config/test.env jest --watch"
   },
-  "jest":{
-    "testEnvironment":"node"
+  "jest": {
+    "testEnvironment": "node"
   },
   "author": "",
   "license": "ISC",
@@ -30,6 +30,7 @@
   "devDependencies": {
     "env-cmd": "^10.1.0",
     "jest": "^26.5.2",
-    "nodemon": "^2.0.4"
+    "nodemon": "^2.0.4",
+    "supertest": "^5.0.0"
   }
 }
