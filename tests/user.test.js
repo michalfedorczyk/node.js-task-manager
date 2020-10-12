@@ -3,30 +3,9 @@ const jwt = require('jsonwebtoken')
 const mongoose = require('mongoose')
 const { app } = require('../src/app')
 const User = require('../src/models/user')
+const { userOne, setupDatabase, fakeUser } = require('./fixtures/db')
 
-
-const userOneID = new mongoose.Types.ObjectId()
-
-const userOne = {
-    _id: userOneID,
-    name: 'Michał',
-    email: 'michalfedorczyk@gmail.com',
-    password: 'Piesek1234!',
-    tokens: [{
-        token: jwt.sign({ _id: userOneID }, process.env.JWT_SECRET)
-    }]
-}
-
-beforeEach(async () => {
-    await User.deleteMany({})
-    await new User(userOne).save()
-})
-
-const fakeUser = {
-    name: 'Faker',
-    email: 'fake@fake.pl',
-    password: 'Fake1234!',
-}
+beforeEach(setupDatabase)
 
 test('Should sign up new User', async () => {
     const response = await request(app).post('/users').send({
@@ -114,18 +93,30 @@ test('Should update user data', async () => {
     const newUserData = {
         name: 'Pies',
         email: 'jamnik@gmail.com',
-        password: 'piesek313123!',
         age: 12
     }
 
     const response = await request(app)
         .patch('/users/me')
-        .send()
+        .send(newUserData)
         .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
-        .attach(newUserData)
         .expect(201)
 
-    console.log(response)
-    const user = await User.findById(response.body._id)
-    expect(user).toMatchObject({ newUserData })
+    const user = await User.findById(userOne._id)
+    expect(user).toMatchObject(newUserData)
+})
+
+test('Should not update invalid user data', async () => {
+    const newUserData = {
+        name: 'Pies',
+        email: 'jamnik@gmail.com',
+        age: 12,
+        location: 'Bisztynek'
+    }
+
+    const response = await request(app)
+        .patch('/users/me')
+        .send(newUserData)
+        .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+        .expect(400)
 })

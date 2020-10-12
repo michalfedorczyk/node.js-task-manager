@@ -66,7 +66,7 @@ router.patch('/users/me', auth, async (req, res) => {
     const isValidOperation = updates.every((update) => allowUpdates.includes(update))
 
     if (!isValidOperation) {
-        res.status(400).send({ error: 'Invalid updates' })
+        return res.status(400).send({ error: 'Invalid updates' })
     }
 
     try {
@@ -114,7 +114,7 @@ router.post('/users/me/avatar', auth, upload.single('avatar'), async (req, res) 
 
 router.delete('/users/me/avatar', auth, async (req, res) => {
     if (!req.user.avatar) {
-        res.status(400).send({ error: 'User avatar unavailable' })
+        return res.status(400).send({ error: 'User avatar unavailable' })
     }
 
     try {
